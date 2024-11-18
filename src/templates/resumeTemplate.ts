@@ -19,6 +19,7 @@ export const resumeTemplate = `
 \\usepackage{fancyhdr}
 \\usepackage[english]{babel}
 \\usepackage{tabularx}
+\\usepackage{ulem}
 \\input{glyphtounicode}
 
 \\pagestyle{fancy}
@@ -88,71 +89,72 @@ export const resumeTemplate = `
 %----------HEADING----------
 \\begin{center}
     \\textbf{\\Huge \\scshape {{name}}} \\\\ \\vspace{1pt}
-    \\small {{#phone}}{{phone}}{{/phone}}{{#phone}}{{#email}} $|$ {{/email}}{{/phone}}{{#email}}\\href{mailto:{{email}}}{\\underline{ {{email}} }}{{/email}}
-    {{#linkedinUrl}}{{#hasContactInfo}} $|$ {{/hasContactInfo}}\\href{ {{linkedinUrl}} }{\\underline{ {{linkedinProfile}} }}{{/linkedinUrl}}
-    {{#githubUrl}}{{#hasContactInfo}} $|$ {{/hasContactInfo}}\\href{ {{githubUrl}} }{\\underline{ {{githubProfile}} }}{{/githubUrl}}
+    \\small 
+    {{#phone}}{{phone}}{{/phone}}
+    {{#phone}}{{#email}} $|$ {{/email}}{{/phone}}
+    {{#email}}\\href{https://mailto:{{email}}}{{{email}}}{{/email}}
+    {{#githubUrl}}{{#hasContactInfo}} $|$ {{/hasContactInfo}}
+    \\href{https://github.com/{{githubProfile}}}{github.com/{{githubProfile}}}{{/githubUrl}}
+    {{#linkedinUrl}}{{#hasContactInfo}} $|$ {{/hasContactInfo}}
+    \\href{https://linkedin.com/in/{{linkedinProfile}}}{linkedin.com/in/{{linkedinProfile}}}{{/linkedinUrl}}
 \\end{center}
 
 {{#hasEducation}}
-%-----------EDUCATION-----------
 \\section{Education}
-  \\resumeSubHeadingListStart
-    {{#education}}
-    \\resumeSubheading
-      { {{school}} }{ {{location}} }
-      { {{degree}} }{ {{date}} }
-    {{/education}}
-  \\resumeSubHeadingListEnd
+\\resumeSubHeadingListStart
+{{#education}}
+\\resumeSubheading
+{ {{{school}}} }{ {{{date}}} }
+{ {{{degree}}} }{ {{{location}}} }
+{{/education}}
+\\resumeSubHeadingListEnd
 {{/hasEducation}}
 
 {{#hasExperience}}
-%-----------EXPERIENCE-----------
 \\section{Experience}
-  \\resumeSubHeadingListStart
-    {{#experience}}
-    \\resumeSubheading
-      { {{title}} }{ {{date}} }
-      { {{company}} }{ {{location}} }
-      {{#highlights.length}}
-      \\resumeItemListStart
-        {{#highlights}}
-        \\resumeItem{ {{.}} }
-        {{/highlights}}
-      \\resumeItemListEnd
-      {{/highlights.length}}
-    {{/experience}}
-  \\resumeSubHeadingListEnd
+\\resumeSubHeadingListStart
+{{#experience}}
+\\resumeSubheading
+{ {{{title}}} }{ {{{date}}} }
+{ {{{company}}} }{ {{{location}}} }
+{{#highlights.length}}
+\\resumeItemListStart
+{{#highlights}}
+\\resumeItem{ {{{.}}} }
+{{/highlights}}
+\\resumeItemListEnd
+{{/highlights.length}}
+{{/experience}}
+\\resumeSubHeadingListEnd
 {{/hasExperience}}
 
 {{#hasProjects}}
-%-----------PROJECTS-----------
 \\section{Projects}
-    \\resumeSubHeadingListStart
-      {{#projects}}
-      \\resumeProjectHeading
-          {\\textbf{ {{name}} } $|$ \\emph{ {{technologies}} }}{ {{date}} }
-          {{#highlights.length}}
-          \\resumeItemListStart
-            {{#highlights}}
-            \\resumeItem{ {{.}} }
-            {{/highlights}}
-          \\resumeItemListEnd
-          {{/highlights.length}}
-      {{/projects}}
-    \\resumeSubHeadingListEnd
+\\resumeSubHeadingListStart
+{{#projects}}
+\\resumeProjectHeading
+{\\textbf{ {{{name}}} } $|$ \\emph{ {{{technologies}}} }}{ {{{date}}} }
+{{#highlights.length}}
+\\resumeItemListStart
+{{#highlights}}
+\\resumeItem{ {{{.}}} }
+{{/highlights}}
+\\resumeItemListEnd
+{{/highlights.length}}
+{{/projects}}
+\\resumeSubHeadingListEnd
 {{/hasProjects}}
 
 {{#hasSkills}}
-%-----------TECHNICAL SKILLS-----------
 \\section{Technical Skills}
- \\begin{itemize}[leftmargin=0.15in, label={}]
+\\begin{itemize}[leftmargin=0.15in, label={}]
     \\small{\\item{
-     {{#languages}}\\textbf{Languages}{: {{languages}} } \\\\{{/languages}}
-     {{#frameworks}}\\textbf{Frameworks}{: {{frameworks}} } \\\\{{/frameworks}}
-     {{#developerTools}}\\textbf{Developer Tools}{: {{developerTools}} } \\\\{{/developerTools}}
-     {{#libraries}}\\textbf{Libraries}{: {{libraries}} }{{/libraries}}
+        {{#languages}}\\textbf{Languages}{: {{languages}} } \\\\{{/languages}}
+        {{#frameworks}}\\textbf{Frameworks}{: {{frameworks}} } \\\\{{/frameworks}}
+        {{#developerTools}}\\textbf{Developer Tools}{: {{developerTools}} } \\\\{{/developerTools}}
+        {{#libraries}}\\textbf{Libraries}{: {{libraries}} }{{/libraries}}
     }}
- \\end{itemize}
+\\end{itemize}
 {{/hasSkills}}
 
 \\end{document}

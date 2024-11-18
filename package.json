@@ -12,6 +12,8 @@
     "@types/mustache": "^4.2.5",
     "mustache": "^4.2.0",
     "next": "15.0.3",
+    "node-latex": "^3.1.0",
+    "pdf-lib": "^1.17.1",
     "react": "19.0.0-rc-66855b96-20241106",
     "react-dom": "19.0.0-rc-66855b96-20241106",
     "react-hook-form": "^7.53.2"
@@ -20,6 +22,7 @@
     "@types/node": "^20",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18",
+    "@types/react-latex": "^2.0.3",
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
     "postcss": "^8",
