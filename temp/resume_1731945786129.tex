@@ -1,0 +1,148 @@
+
+%-------------------------
+% Resume in Latex
+% Author : Jake Gutierrez
+% Based off of: https://github.com/sb2nov/resume
+% License : MIT
+%------------------------
+
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{ulem}
+\input{glyphtounicode}
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-.5in}
+\addtolength{\textheight}{1.0in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Ensure that generate pdf is machine readable/ATS parsable
+\pdfgentounicode=1
+
+%-------------------------
+% Custom commands
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeProjectHeading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 & #2 \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+%-------------------------------------------
+%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+%----------HEADING----------
+\begin{center}
+    \textbf{\Huge \scshape Mohd Zaid} \\ \vspace{1pt}
+    \small 
+    9474383993
+     $|$ 
+    \href{https://mailto:mohdzaid.work@gmail.com}mohdzaid.work@gmail.com
+     $|$ 
+    \href{https://github.com/Xaid-vfx}{github.com/Xaid-vfx}
+     $|$ 
+    \href{https://linkedin.com/in/mohd-zaid-3889801b7}{linkedin.com/in/mohd-zaid-3889801b7}
+\end{center}
+
+\section{Education}
+\resumeSubHeadingListStart
+\resumeSubheading
+{ NMIT }{ May 2020 -  Present }
+{ Bachelors in CS }{ Bangalore, India }
+\resumeSubHeadingListEnd
+
+\section{Experience}
+\resumeSubHeadingListStart
+\resumeSubheading
+{ Developer }{ Sept 2024 - Present }
+{ IG Group }{ Bangalore }
+\resumeItemListStart
+\resumeItem{ • Built web components in Adobe Experience Manager using Java Sling Model, accelerating content delivery. }
+\resumeItem{ • Built web components in Adobe Experience Manager using Java Sling Model, accelerating content delivery. }
+\resumeItemListEnd
+\resumeSubheading
+{ Bloom }{ Dec 2020 - Present }
+{ Co-founder }{ Remote }
+\resumeItemListStart
+\resumeItem{ Built a waitlist of 10+ businesses collectively training over 1000 apprentices each year. }
+\resumeItem{ Shipped 20k+ lines of code, leading a product for apprenticeships and online education across Africa with Supabase backend and Next.js/React frontend while overseeing business, development, DevOps, marketing and recruitment. }
+\resumeItemListEnd
+\resumeSubHeadingListEnd
+
+\section{Projects}
+\resumeSubHeadingListStart
+\resumeProjectHeading
+{\textbf{ Bloom } $|$ \emph{ Next.js, React.js, PostgreSQL, Supabase, Tailwind, TypeScript, Docker, Paystack  }}{ Dec 2023 – Aug 2024 }
+\resumeItemListStart
+\resumeItem{ Implemented authentication and authorization for two user types using Google Auth and phone number verification, establishing a secure JWT-based sign-up/sign-in process to enhance user security. }
+\resumeItem{ Developed a comprehensive job portal featuring job posting and application functionalities, candidate and job management dashboards, and real-time chat capabilities to enhance connectivity and streamline recruitment. }
+\resumeItem{ Built a secure payment system using Paystack to accept and transfer both domestic and international payments between users, leveraging cron jobs for automated processes. }
+\resumeItemListEnd
+\resumeSubHeadingListEnd
+
+\section{Technical Skills}
+\begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+        \textbf{Languages}{: C&#x2F;C++, Java, TypeScript, Node.js } \\
+        \textbf{Frameworks}{:  GO, Python, SQL(Postgres), React, } \\
+        \textbf{Developer Tools}{:  Next.js, Docker, Git } \\
+        \textbf{Libraries}{: Firebase, Linux, API }
+    }}
+\end{itemize}
+
+\end{document}

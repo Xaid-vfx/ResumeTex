@@ -3,44 +3,65 @@ import { resumeTemplate } from '@/templates/resumeTemplate';
 import Mustache from 'mustache';
 import type { ResumeData } from '@/types/resume';
 import { exec } from 'child_process';
-import { writeFile, mkdir, readFile, unlink, stat } from 'fs/promises';
+import { writeFile, mkdir, readFile, unlink, readdir, rmdir } from 'fs/promises';
 import { join } from 'path';
 import { promisify } from 'util';
+import { v4 as uuidv4 } from 'uuid';
 
 const execAsync = promisify(exec);
+const TEMP_DIR = '/tmp/latex-temp'; // Docker container temp directory
 
-async function readLogFile(logFile: string): Promise<string> {
+function escapeLatexSpecialChars(text: string): string {
+    return text
+        .replace(/&/g, '\\&')
+        .replace(/#/g, '\\#')
+        .replace(/\$/g, '\\$')
+        .replace(/%/g, '\\%')
+        .replace(/_/g, '\\_')
+        .replace(/\{/g, '\\{')
+        .replace(/\}/g, '\\}')
+        .replace(/~/g, '\\textasciitilde{}')
+        .replace(/\^/g, '\\textasciicircum{}')
+        .replace(/\\/g, '\\textbackslash{}')
+        .replace(/\//g, '\\slash{}');
+}
+
+async function cleanupTempFiles(dir: string) {
     try {
-        return await readFile(logFile, 'utf-8');
+        const files = await readdir(dir);
+        await Promise.all(
+            files.map(file => unlink(join(dir, file)).catch(console.error))
+        );
+        await rmdir(dir).catch(console.error);
     } catch (error) {
-        return `Could not read log file: ${error.message}`;
+        console.error('Cleanup error:', error);
     }
 }
 
 export async function POST(request: Request) {
+    const jobId = uuidv4();
+    const jobDir = join(TEMP_DIR, jobId);
+
     try {
+        // Create job-specific directory
+        await mkdir(jobDir, { recursive: true });
+
         const resumeData: ResumeData = await request.json();
 
-        // Debug log the incoming data
-        console.log('Incoming Resume Data:', JSON.stringify(resumeData, null, 2));
-
-        const githubProfile = resumeData.personalInfo?.githubProfile || '';
-        const linkedinProfile = resumeData.personalInfo?.linkedinProfile || '';
-
+        // Process template data
         const templateData = {
             name: resumeData.personalInfo?.name || '',
             phone: resumeData.personalInfo?.phone || '',
             email: resumeData.personalInfo?.email || '',
             githubUrl: resumeData.personalInfo?.githubUrl || '',
             linkedinUrl: resumeData.personalInfo?.linkedinUrl || '',
-            githubProfile,
-            linkedinProfile,
+            githubProfile: resumeData.personalInfo?.githubProfile || '',
+            linkedinProfile: resumeData.personalInfo?.linkedinProfile || '',
             hasContactInfo: !!(resumeData.personalInfo?.phone ||
                 resumeData.personalInfo?.email ||
                 resumeData.personalInfo?.githubUrl ||
                 resumeData.personalInfo?.linkedinUrl),
 
-            // Education section
             education: (resumeData.education || []).filter(edu =>
                 edu.school || edu.location || edu.degree || edu.date
             ),
@@ -48,17 +69,16 @@ export async function POST(request: Request) {
                 edu.school || edu.location || edu.degree || edu.date
             ),
 
-            // Experience section
             experience: (resumeData.experience || []).filter(exp => {
                 const hasContent = exp.title || exp.company || exp.location || exp.date;
                 const highlights = (exp.highlights || []).filter(h => h?.trim());
                 return hasContent || highlights.length > 0;
             }),
             hasExperience: (resumeData.experience || []).some(exp =>
-                exp.title || exp.company || exp.location || exp.date || (exp.highlights || []).some(h => h?.trim())
+                exp.title || exp.company || exp.location || exp.date ||
+                (exp.highlights || []).some(h => h?.trim())
             ),
 
-            // Projects section
             projects: resumeData.projects?.map(proj => ({
                 name: proj.name || '',
                 technologies: proj.technologies || '',
@@ -73,80 +93,115 @@ export async function POST(request: Request) {
                 (Array.isArray(proj.highlights) && proj.highlights.some(h => h?.trim()))
             )),
 
-            // Technical skills section
-            languages: resumeData.technicalSkills?.languages || '',
-            frameworks: resumeData.technicalSkills?.frameworks || '',
-            developerTools: resumeData.technicalSkills?.developerTools || '',
-            libraries: resumeData.technicalSkills?.libraries || '',
+            languages: escapeLatexSpecialChars(resumeData.technicalSkills?.languages || ''),
+            frameworks: escapeLatexSpecialChars(resumeData.technicalSkills?.frameworks || ''),
+            developerTools: escapeLatexSpecialChars(resumeData.technicalSkills?.developerTools || ''),
+            libraries: escapeLatexSpecialChars(resumeData.technicalSkills?.libraries || ''),
             hasSkills: !!(resumeData.technicalSkills?.languages ||
                 resumeData.technicalSkills?.frameworks ||
                 resumeData.technicalSkills?.developerTools ||
                 resumeData.technicalSkills?.libraries)
         };
 
-        // Debug log the template data
-        console.log('Template Data:', JSON.stringify(templateData, null, 2));
-
         const latexContent = Mustache.render(resumeTemplate, templateData);
 
-        // Debug log the generated LaTeX
-        console.log('Generated LaTeX:', latexContent);
-
-        // Validate LaTeX content before writing to file
         if (!latexContent || latexContent.trim() === '') {
             throw new Error('Generated LaTeX content is empty');
         }
 
-        // Create temp directory with error handling
-        const tempDir = join(process.cwd(), 'temp');
-        try {
-            await mkdir(tempDir, { recursive: true });
-        } catch (error) {
-            throw new Error(`Failed to create temp directory: ${error.message}`);
-        }
-
-        const timestamp = Date.now();
-        const texFile = join(tempDir, `resume_${timestamp}.tex`);
+        // Write LaTeX file
+        const texFile = join(jobDir, 'resume.tex');
         await writeFile(texFile, latexContent, 'utf8');
 
         try {
-            // Run pdflatex
-            await execAsync(`pdflatex -interaction=nonstopmode -output-directory=${tempDir} ${texFile}`);
-            await execAsync(`pdflatex -interaction=nonstopmode -output-directory=${tempDir} ${texFile}`);
+            // Run pdflatex with timeout
+            const pdflatexCmd = `pdflatex -interaction=nonstopmode -output-directory=${jobDir} ${texFile}`;
 
-            const pdfPath = texFile.replace('.tex', '.pdf');
+            // First run
+            await execAsync(pdflatexCmd, {
+                timeout: 30000, // 30 second timeout
+                env: {
+                    ...process.env,
+                    PATH: `${process.env.PATH}:/usr/local/texlive/bin/x86_64-linux`
+                }
+            });
+
+            // Second run for references
+            await execAsync(pdflatexCmd, {
+                timeout: 30000,
+                env: {
+                    ...process.env,
+                    PATH: `${process.env.PATH}:/usr/local/texlive/bin/x86_64-linux`
+                }
+            });
+
+            // Read the generated PDF
+            const pdfPath = join(jobDir, 'resume.pdf');
             const pdfContent = await readFile(pdfPath);
 
             // Clean up temporary files
-            const cleanupFiles = [
-                texFile,
-                pdfPath,
-                texFile.replace('.tex', '.aux'),
-                texFile.replace('.tex', '.log'),
-                texFile.replace('.tex', '.out')
-            ];
-
-            await Promise.all(
-                cleanupFiles.map(file => unlink(file).catch(() => { }))
-            );
+            await cleanupTempFiles(jobDir);
 
             return new NextResponse(pdfContent, {
                 headers: {
                     'Content-Type': 'application/pdf',
-                    'Content-Disposition': 'attachment; filename="resume.pdf"'
+                    'Content-Disposition': 'inline',
+                    'Cache-Control': 'no-store',
+                    'X-Frame-Options': 'SAMEORIGIN'
                 }
             });
 
         } catch (error) {
-            console.error('LaTeX Error:', error);
-            throw new Error(`LaTeX compilation failed: ${error.message}`);
+            // Read log file for better error reporting
+            const logFile = join(jobDir, 'resume.log');
+            let logContent = '';
+            try {
+                logContent = await readFile(logFile, 'utf8');
+            } catch (e) {
+                console.error('Could not read log file:', e);
+            }
+
+            throw new Error(`LaTeX compilation failed: ${error.message}\nLog: ${logContent}`);
         }
 
     } catch (error) {
+        // Clean up on error
+        await cleanupTempFiles(jobDir);
+
         console.error('PDF Generation Error:', error);
         return NextResponse.json(
-            { error: 'Failed to generate PDF', details: error.message },
+            {
+                error: 'Failed to generate PDF',
+                details: error.message,
+                jobId
+            },
             { status: 500 }
         );
     }
+}
+
+// Cleanup old temp files periodically
+if (typeof setInterval !== 'undefined') {
+    setInterval(async () => {
+        try {
+            const dirs = await readdir(TEMP_DIR);
+            const now = Date.now();
+
+            for (const dir of dirs) {
+                try {
+                    const dirPath = join(TEMP_DIR, dir);
+                    const stats = await stat(dirPath);
+
+                    // Remove directories older than 1 hour
+                    if (now - stats.mtimeMs > 3600000) {
+                        await cleanupTempFiles(dirPath);
+                    }
+                } catch (error) {
+                    console.error(`Error cleaning up directory ${dir}:`, error);
+                }
+            }
+        } catch (error) {
+            console.error('Error in cleanup interval:', error);
+        }
+    }, 3600000); // Run every hour
 } 

@@ -29,7 +29,7 @@ const DynamicList: React.FC<DynamicListProps> = ({ items, onChange, placeholder 
                     onChange={(e) => setNewItem(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addItem()}
                     placeholder={placeholder}
-                    className="flex-1 p-2 border rounded"
+                    className="flex-1 p-2 border text-black rounded"
                 />
                 <button
                     type="button"
@@ -42,7 +42,7 @@ const DynamicList: React.FC<DynamicListProps> = ({ items, onChange, placeholder 
             <ul className="space-y-2">
                 {items.map((item, index) => (
                     <li key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                        <span>{item}</span>
+                        <span className='text-gray-600'>{item}</span>
                         <button
                             type="button"
                             onClick={() => removeItem(index)}

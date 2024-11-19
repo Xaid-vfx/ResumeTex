@@ -22,12 +22,12 @@ export default function HomePage() {
                 <div className="text-center mb-24 space-y-8">
                     <div className="inline-block animate-bounce-slow">
                         <span className="px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-sm font-medium">
-                            ✨ Create Professional Resumes with LaTeX
+                            ✨ Professional Resumes with LaTeX
                         </span>
                     </div>
 
                     <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
-                        LaTeX Resume Builder
+                        ResumeTeX
                     </h1>
 
                     <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
@@ -110,23 +110,8 @@ export default function HomePage() {
 
                 {/* Footer */}
                 <footer className="text-center text-gray-500 dark:text-gray-400 space-y-4">
-                    <div className="flex justify-center gap-6">
-                        <a href="#" className="hover:text-gray-800 dark:hover:text-gray-200">About</a>
-                        <a href="#" className="hover:text-gray-800 dark:hover:text-gray-200">Templates</a>
-                        <a href="#" className="hover:text-gray-800 dark:hover:text-gray-200">Contact</a>
-                        <a href="#" className="hover:text-gray-800 dark:hover:text-gray-200">Privacy</a>
-                    </div>
                     <p>
-                        Built with{" "}
-                        <a
-                            href="https://nextjs.org"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-500 hover:underline"
-                        >
-                            Next.js
-                        </a>
-                        {" "}and LaTeX
+                        Built by <a href='https://x.com/okzaid' className="text-white hover:underline font-medium cursor-pointer">Zaid 👨‍💻</a>
                     </p>
                 </footer>
             </main>

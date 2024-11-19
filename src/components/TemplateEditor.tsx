@@ -2,9 +2,32 @@
 
 import { useRouter } from 'next/navigation';
 import ResumeForm from '@/components/ResumeForm';
+import DeedyResumeForm from '@/components/DeedyResumeForm';
 
 export default function TemplateEditor({ templateId }: { templateId: string }) {
     const router = useRouter();
+
+    const getTemplateTitle = (id: string) => {
+        switch (id) {
+            case 'jake':
+                return "Jake's Resume Template";
+            case 'deedy':
+                return "Deedy CV Template";
+            default:
+                return 'Template Not Found';
+        }
+    };
+
+    const renderForm = () => {
+        switch (templateId) {
+            case 'jake':
+                return <ResumeForm />;
+            case 'deedy':
+                return <DeedyResumeForm />;
+            default:
+                return <div>Template not found</div>;
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
@@ -30,11 +53,11 @@ export default function TemplateEditor({ templateId }: { templateId: string }) {
                 </button>
 
                 <h1 className="text-3xl font-bold mb-8 text-center">
-                    {templateId === 'jake' ? "Jake's Resume Template" : 'Template Not Found'}
+                    {getTemplateTitle(templateId)}
                 </h1>
 
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-                    <ResumeForm />
+                    {renderForm()}
                 </div>
             </div>
         </div>

@@ -1,7 +1,7 @@
 /* eslint-disable */
 'use client';
 
-import { useState, memo } from 'react';
+import { useState, memo, useCallback, useEffect } from 'react';
 import type { ResumeData } from '@/types/resume';
 import { useForm, useFieldArray, Controller, Control } from 'react-hook-form';
 import DynamicList from './DynamicList';
@@ -12,6 +12,8 @@ export default function ResumeForm() {
     const [currentStep, setCurrentStep] = useState(1);
     const [isGenerating, setIsGenerating] = useState(false);
     const [selectedFormat, setSelectedFormat] = useState<FileFormat>('both');
+    const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+    const [isCompiling, setIsCompiling] = useState(false);
 
     // Initialize React Hook Form
     const methods = useForm<ResumeData>({
@@ -162,6 +164,62 @@ export default function ResumeForm() {
         }
     };
 
+    // Add new compile function
+    const compilePDF = useCallback(async (data: ResumeData) => {
+        try {
+            setIsCompiling(true);
+
+            const githubUsername = cleanGitHubUrl(data.personalInfo?.githubUrl || '');
+            const linkedinUsername = cleanLinkedInUrl(data.personalInfo?.linkedinUrl || '');
+
+            const cleanedData = {
+                ...data,
+                hasEducation: data.education?.some(edu =>
+                    edu.school || edu.location || edu.degree || edu.date
+                ),
+                hasExperience: data.experience?.some(exp =>
+                    exp.title || exp.company || exp.location || exp.date || exp.highlights?.length
+                ),
+                hasProjects: data.projects?.some(proj =>
+                    proj.name || proj.technologies || proj.date || proj.highlights?.length
+                ),
+                hasSkills: !!(
+                    data.technicalSkills?.languages ||
+                    data.technicalSkills?.frameworks ||
+                    data.technicalSkills?.developerTools ||
+                    data.technicalSkills?.libraries
+                ),
+                personalInfo: {
+                    ...data.personalInfo,
+                    githubUrl: githubUsername,
+                    linkedinUrl: linkedinUsername,
+                    githubProfile: githubUsername,
+                    linkedinProfile: linkedinUsername
+                }
+            };
+
+            const response = await fetch('/api/generate-pdf', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cleanedData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to compile PDF');
+            }
+
+            const pdfBlob = await response.blob();
+            const url = URL.createObjectURL(pdfBlob);
+            setPdfUrl(url);
+
+        } catch (error) {
+            console.error('Compilation error:', error);
+            alert('Failed to compile PDF. Please try again.');
+        } finally {
+            setIsCompiling(false);
+        }
+    }, []);
+
     // Common Components
     const SectionWrapper = ({ title, description, children }: {
         title: string;
@@ -250,26 +308,25 @@ export default function ResumeForm() {
 
     // Navigation Components
     const StepIndicator = () => (
-        <div className="mb-8">
+        <div className="w-full sm:w-auto mb-4 sm:mb-0">
             <div className="flex justify-between items-center">
                 {[...Array(TOTAL_STEPS)].map((_, index) => (
                     <div key={index} className="flex items-center">
-                        <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center 
-                                ${currentStep === index + 1 ? 'bg-blue-600 text-white' :
-                                    currentStep > index + 1 ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
+                        <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-sm sm:text-base
+                            ${currentStep === index + 1 ? 'bg-blue-600 text-white' :
+                                currentStep > index + 1 ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
                         >
                             {currentStep > index + 1 ? '✓' : index + 1}
                         </div>
                         {index < TOTAL_STEPS - 1 && (
-                            <div className={`h-1 w-16 mx-2 
+                            <div className={`h-1 w-8 sm:w-16 mx-1 sm:mx-2 
                                 ${currentStep > index + 1 ? 'bg-green-500' : 'bg-gray-200'}`}
                             />
                         )}
                     </div>
                 ))}
             </div>
-            <div className="flex justify-between mt-2 text-sm text-gray-600">
+            <div className="flex justify-between mt-2 text-xs sm:text-sm text-gray-600">
                 {STEP_TITLES.map((title, index) => (
                     <span key={index} className="text-center flex-1">{title}</span>
                 ))}
@@ -279,64 +336,85 @@ export default function ResumeForm() {
 
     // Update Navigation Buttons
     const NavigationButtons = () => (
-        <div className="flex justify-between mt-6 pt-4 border-t">
+        <div className="flex flex-wrap justify-between mt-8 gap-4">
             {currentStep > 1 && (
                 <button
                     type="button"
                     onClick={() => setCurrentStep(currentStep - 1)}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                    className="w-full sm:w-auto px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded"
                 >
                     Back
                 </button>
             )}
 
-            {currentStep < TOTAL_STEPS ? (
+            <div className="flex gap-2 ml-auto">
                 <button
                     type="button"
-                    onClick={() => setCurrentStep(currentStep + 1)}
-                    className="ml-auto px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    onClick={() => compilePDF(methods.getValues())}
+                    disabled={isCompiling}
+                    className={`px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 
+                        flex items-center gap-2 ${isCompiling ? 'opacity-75' : ''}`}
                 >
-                    Next
+                    {isCompiling ? (
+                        <>
+                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            Compiling...
+                        </>
+                    ) : (
+                        'Compile'
+                    )}
                 </button>
-            ) : (
-                <div className="ml-auto flex items-center gap-4">
-                    <select
-                        value={selectedFormat}
-                        onChange={(e) => setSelectedFormat(e.target.value as FileFormat)}
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 
-                                 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                    >
-                        <option value="both">PDF & LaTeX</option>
-                        <option value="pdf">PDF Only</option>
-                        <option value="latex">LaTeX Only</option>
-                    </select>
+
+                {currentStep < TOTAL_STEPS ? (
                     <button
                         type="button"
-                        onClick={handleSubmit(generateResume)}
-                        disabled={isGenerating}
-                        className={`px-4 py-2 bg-green-600 text-white rounded 
-                                 hover:bg-green-700 flex items-center space-x-2
-                                 ${isGenerating ? 'opacity-75 cursor-not-allowed' : ''}`}
+                        onClick={() => setCurrentStep(currentStep + 1)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                     >
-                        {isGenerating ? (
-                            <>
-                                <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                </svg>
-                                <span>Generating...</span>
-                            </>
-                        ) : (
-                            <>
-                                <span>Generate Resume</span>
-                                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                </svg>
-                            </>
-                        )}
+                        Next
                     </button>
-                </div>
-            )}
+                ) : (
+                    <div className="flex items-center gap-2">
+                        <select
+                            value={selectedFormat}
+                            onChange={(e) => setSelectedFormat(e.target.value as FileFormat)}
+                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 
+                                    focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                        >
+                            <option value="both">PDF & LaTeX</option>
+                            <option value="pdf">PDF Only</option>
+                            <option value="latex">LaTeX Only</option>
+                        </select>
+                        <button
+                            type="button"
+                            onClick={handleSubmit(generateResume)}
+                            disabled={isGenerating}
+                            className={`px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 
+                                flex items-center gap-2 ${isGenerating ? 'opacity-75' : ''}`}
+                        >
+                            {isGenerating ? (
+                                <>
+                                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                    </svg>
+                                    Generating...
+                                </>
+                            ) : (
+                                <>
+                                    Download
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                    </svg>
+                                </>
+                            )}
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
     );
 
@@ -714,25 +792,47 @@ export default function ResumeForm() {
 
     // Main Render
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="container mx-auto px-4">
-                <div className="flex justify-between items-center mb-6">
-                    <StepIndicator />
-                    <button
-                        type="button"
-                        onClick={loadSampleData}
-                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                    >
-                        Load Sample
-                    </button>
+        <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+            <div className="container mx-auto px-2 sm:px-4 max-w-full">
+                <div className="flex flex-col lg:flex-row gap-4">
+                    {/* Form Section */}
+                    <div className="w-full lg:w-1/2">
+                        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6 gap-4">
+                            <StepIndicator />
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={loadSampleData}
+                                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                >
+                                    Load Sample
+                                </button>
+                            </div>
+                        </div>
+                        <form
+                            onSubmit={handleSubmit(generateResume)}
+                            className="bg-white shadow-md rounded-lg p-3 sm:p-6"
+                        >
+                            {renderCurrentStep()}
+                            <NavigationButtons />
+                        </form>
+                    </div>
+
+                    {/* PDF Preview Section */}
+                    <div className="w-full lg:w-1/2">
+                        {pdfUrl ? (
+                            <iframe
+                                src={pdfUrl}
+                                className="w-full h-[calc(100vh-32px)]"
+                                title="Resume Preview"
+                            />
+                        ) : (
+                            <div className="w-full h-[calc(100vh-32px)] flex items-center justify-center text-gray-500 border-2 border-dashed rounded-lg">
+                                Click "Compile" to see preview
+                            </div>
+                        )}
+                    </div>
                 </div>
-                <form
-                    onSubmit={handleSubmit(generateResume)}
-                    className="bg-white shadow-md rounded-lg p-6"
-                >
-                    {renderCurrentStep()}
-                    <NavigationButtons />
-                </form>
             </div>
         </div>
     );
