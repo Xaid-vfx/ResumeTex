@@ -1,19 +1,26 @@
 /* eslint-disable */
 'use client';
 
-import { useState, memo, useCallback, useEffect } from 'react';
+import { useState, memo, useCallback, useEffect, forwardRef } from 'react';
 import type { ResumeData } from '@/types/resume';
 import { useForm, useFieldArray, Controller, Control } from 'react-hook-form';
 import DynamicList from './DynamicList';
 
 type FileFormat = 'pdf' | 'latex' | 'both';
 
-export default function ResumeForm() {
+// Add these props to the ResumeForm component
+interface ResumeFormProps {
+    onLoadSample?: () => void;
+    onCompile?: (data: ResumeData) => void;
+    isCompiling?: boolean;
+}
+
+const ResumeForm = forwardRef((props: ResumeFormProps, ref) => {
     const [currentStep, setCurrentStep] = useState(1);
     const [isGenerating, setIsGenerating] = useState(false);
     const [selectedFormat, setSelectedFormat] = useState<FileFormat>('both');
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-    const [isCompiling, setIsCompiling] = useState(false);
+    const [showPreview, setShowPreview] = useState(false);
 
     // Initialize React Hook Form
     const methods = useForm<ResumeData>({
@@ -36,6 +43,16 @@ export default function ResumeForm() {
             githubProfile: ''
         }
     });
+
+    // Expose methods and setPdfUrl through ref
+    useEffect(() => {
+        if (ref) {
+            (ref as any).current = {
+                methods,
+                setPdfUrl
+            };
+        }
+    }, [ref, methods]);
 
     const { control, handleSubmit } = methods;
 
@@ -164,62 +181,6 @@ export default function ResumeForm() {
         }
     };
 
-    // Add new compile function
-    const compilePDF = useCallback(async (data: ResumeData) => {
-        try {
-            setIsCompiling(true);
-
-            const githubUsername = cleanGitHubUrl(data.personalInfo?.githubUrl || '');
-            const linkedinUsername = cleanLinkedInUrl(data.personalInfo?.linkedinUrl || '');
-
-            const cleanedData = {
-                ...data,
-                hasEducation: data.education?.some(edu =>
-                    edu.school || edu.location || edu.degree || edu.date
-                ),
-                hasExperience: data.experience?.some(exp =>
-                    exp.title || exp.company || exp.location || exp.date || exp.highlights?.length
-                ),
-                hasProjects: data.projects?.some(proj =>
-                    proj.name || proj.technologies || proj.date || proj.highlights?.length
-                ),
-                hasSkills: !!(
-                    data.technicalSkills?.languages ||
-                    data.technicalSkills?.frameworks ||
-                    data.technicalSkills?.developerTools ||
-                    data.technicalSkills?.libraries
-                ),
-                personalInfo: {
-                    ...data.personalInfo,
-                    githubUrl: githubUsername,
-                    linkedinUrl: linkedinUsername,
-                    githubProfile: githubUsername,
-                    linkedinProfile: linkedinUsername
-                }
-            };
-
-            const response = await fetch('/api/generate-pdf', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(cleanedData),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to compile PDF');
-            }
-
-            const pdfBlob = await response.blob();
-            const url = URL.createObjectURL(pdfBlob);
-            setPdfUrl(url);
-
-        } catch (error) {
-            console.error('Compilation error:', error);
-            alert('Failed to compile PDF. Please try again.');
-        } finally {
-            setIsCompiling(false);
-        }
-    }, []);
-
     // Common Components
     const SectionWrapper = ({ title, description, children }: {
         title: string;
@@ -228,8 +189,8 @@ export default function ResumeForm() {
     }) => (
         <div key={title} className="animate-fadeIn">
             <div className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">{title}</h2>
-                <p className="text-gray-600">{description}</p>
+                <h2 className="text-2xl font-bold text-gray-100 mb-2">{title}</h2>
+                <p className="text-gray-400">{description}</p>
             </div>
             <div className="form-section-content">
                 {children}
@@ -254,7 +215,7 @@ export default function ResumeForm() {
     }) => (
         <div className="relative w-full">
             {label && (
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                     {label}
                 </label>
             )}
@@ -267,18 +228,18 @@ export default function ResumeForm() {
                             <textarea
                                 {...field}
                                 rows={5}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg
-                                    focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
-                                    transition-all duration-200 text-black resize-y"
+                                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg
+                                    focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 
+                                    transition-all duration-200 text-gray-100 placeholder-gray-400 resize-y"
                                 placeholder={placeholder}
                             />
                         ) : (
                             <input
                                 {...field}
                                 type={type}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg
-                                    focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
-                                    transition-all duration-200 text-black"
+                                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg
+                                    focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 
+                                    transition-all duration-200 text-gray-100 placeholder-gray-400"
                                 placeholder={placeholder}
                             />
                         )
@@ -295,8 +256,8 @@ export default function ResumeForm() {
         <button
             type="button"
             onClick={onClick}
-            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg
-                     text-gray-600 hover:text-gray-800 hover:border-gray-400
+            className="w-full py-3 border-2 border-dashed border-gray-600 rounded-lg
+                     text-gray-400 hover:text-gray-200 hover:border-gray-500 hover:bg-gray-700/50
                      transition-colors duration-200 flex items-center justify-center"
         >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -306,114 +267,97 @@ export default function ResumeForm() {
         </button>
     );
 
-    // Navigation Components
-    const StepIndicator = () => (
-        <div className="w-full sm:w-auto mb-4 sm:mb-0">
-            <div className="flex justify-between items-center">
-                {[...Array(TOTAL_STEPS)].map((_, index) => (
-                    <div key={index} className="flex items-center">
-                        <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-sm sm:text-base
-                            ${currentStep === index + 1 ? 'bg-blue-600 text-white' :
-                                currentStep > index + 1 ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
-                        >
-                            {currentStep > index + 1 ? '✓' : index + 1}
-                        </div>
-                        {index < TOTAL_STEPS - 1 && (
-                            <div className={`h-1 w-8 sm:w-16 mx-1 sm:mx-2 
-                                ${currentStep > index + 1 ? 'bg-green-500' : 'bg-gray-200'}`}
-                            />
-                        )}
-                    </div>
-                ))}
-            </div>
-            <div className="flex justify-between mt-2 text-xs sm:text-sm text-gray-600">
-                {STEP_TITLES.map((title, index) => (
-                    <span key={index} className="text-center flex-1">{title}</span>
-                ))}
-            </div>
-        </div>
-    );
+    // Update the StepIcon component
+    const StepIcon = ({ step, currentStep, index }: { step: number; currentStep: number; index: number }) => {
+        const isActive = currentStep === step;
+        const isCompleted = currentStep > step;
 
-    // Update Navigation Buttons
-    const NavigationButtons = () => (
-        <div className="flex flex-wrap justify-between mt-8 gap-4">
-            {currentStep > 1 && (
-                <button
-                    type="button"
-                    onClick={() => setCurrentStep(currentStep - 1)}
-                    className="w-full sm:w-auto px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded"
-                >
-                    Back
-                </button>
-            )}
+        const icons = {
+            1: (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            ),
+            2: (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+            ),
+            3: (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                        d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+            ),
+            4: (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+            ),
+            5: (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+            ),
+        };
 
-            <div className="flex gap-2 ml-auto">
-                <button
-                    type="button"
-                    onClick={() => compilePDF(methods.getValues())}
-                    disabled={isCompiling}
-                    className={`px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 
-                        flex items-center gap-2 ${isCompiling ? 'opacity-75' : ''}`}
-                >
-                    {isCompiling ? (
-                        <>
-                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                            </svg>
-                            Compiling...
-                        </>
+        return (
+            <div className={`relative flex items-center justify-center
+                ${isActive ? 'scale-105 transform transition-all duration-200' : ''}`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center
+                    transition-all duration-300 ease-in-out
+                    ${isActive
+                        ? 'bg-indigo-600 text-white ring-2 ring-indigo-200 dark:ring-indigo-800'
+                        : isCompleted
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-gray-200 text-gray-400 dark:bg-gray-800'}`}>
+                    {isCompleted ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
                     ) : (
-                        'Compile'
+                        icons[step as keyof typeof icons]
                     )}
-                </button>
+                </div>
+                <div className={`absolute -bottom-5 w-max text-center transition-all duration-300 text-xs
+                    ${isActive ? 'text-indigo-600 font-medium scale-105' : 'text-gray-500'}`}>
+                    {STEP_TITLES[index]}
+                </div>
+            </div>
+        );
+    };
 
-                {currentStep < TOTAL_STEPS ? (
-                    <button
-                        type="button"
-                        onClick={() => setCurrentStep(currentStep + 1)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                    >
-                        Next
-                    </button>
-                ) : (
-                    <div className="flex items-center gap-2">
-                        <select
-                            value={selectedFormat}
-                            onChange={(e) => setSelectedFormat(e.target.value as FileFormat)}
-                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 
-                                    focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                        >
-                            <option value="both">PDF & LaTeX</option>
-                            <option value="pdf">PDF Only</option>
-                            <option value="latex">LaTeX Only</option>
-                        </select>
-                        <button
-                            type="button"
-                            onClick={handleSubmit(generateResume)}
-                            disabled={isGenerating}
-                            className={`px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 
-                                flex items-center gap-2 ${isGenerating ? 'opacity-75' : ''}`}
-                        >
-                            {isGenerating ? (
-                                <>
-                                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                    </svg>
-                                    Generating...
-                                </>
-                            ) : (
-                                <>
-                                    Download
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                    </svg>
-                                </>
+    // Update the StepIndicator component
+    const StepIndicator = () => (
+        <div className="w-full mb-10"> {/* Remove padding here */}
+            <div className="max-w-2xl mx-auto px-4"> {/* Add max-width, center with margin, and padding */}
+                <div className="relative flex justify-between items-center">
+                    {[...Array(TOTAL_STEPS)].map((_, index) => (
+                        <div key={index} className="flex items-center justify-center">
+                            <StepIcon step={index + 1} currentStep={currentStep} index={index} />
+                            {index < TOTAL_STEPS - 1 && (
+                                <div className="flex-1 mx-2">
+                                    <div className="relative">
+                                        <div className={`h-0.5 rounded-full transition-all duration-500 ease-in-out
+                                            ${currentStep > index + 1
+                                                ? 'bg-emerald-500'
+                                                : 'bg-gray-200 dark:bg-gray-800'}`}>
+                                            <div className={`absolute top-0 left-0 h-full rounded-full
+                                                transition-all duration-500 ease-in-out
+                                                ${currentStep === index + 2
+                                                    ? 'bg-indigo-600 animate-progress w-full'
+                                                    : 'w-0'}`} />
+                                        </div>
+                                    </div>
+                                </div>
                             )}
-                        </button>
-                    </div>
-                )}
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );
@@ -474,14 +418,18 @@ export default function ResumeForm() {
                 description="Add your educational background, starting with the most recent."
             >
                 {fields.map((field, index) => (
-                    <div key={field.id} className="mb-8 relative p-6 border border-gray-200 rounded-lg">
+                    <div key={field.id} className="mb-8 relative p-6 bg-gray-750 border border-gray-600 rounded-lg">
                         {fields.length > 1 && (
                             <button
                                 type="button"
                                 onClick={() => remove(index)}
-                                className="absolute right-4 top-4 text-red-500 hover:text-red-700"
+                                className="absolute right-4 top-4 text-gray-400 hover:text-red-400 
+                                    transition-colors duration-200"
                             >
-                                Remove
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
                             </button>
                         )}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -537,14 +485,18 @@ export default function ResumeForm() {
                 description="Add your work experience, starting with the most recent."
             >
                 {fields.map((field, index) => (
-                    <div key={field.id} className="mb-8 relative p-6 border border-gray-200 rounded-lg">
+                    <div key={field.id} className="mb-8 relative p-6 bg-gray-750 border border-gray-600 rounded-lg">
                         {fields.length > 1 && (
                             <button
                                 type="button"
                                 onClick={() => remove(index)}
-                                className="absolute right-4 top-4 text-red-500 hover:text-red-700"
+                                className="absolute right-4 top-4 text-gray-400 hover:text-red-400 
+                                    transition-colors duration-200"
                             >
-                                Remove
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
                             </button>
                         )}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -574,7 +526,7 @@ export default function ResumeForm() {
                             />
                         </div>
                         <div className="mt-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-300 mb-1">
                                 Highlights/Achievements
                             </label>
                             <Controller
@@ -618,14 +570,18 @@ export default function ResumeForm() {
                 description="Add your notable projects and their key achievements."
             >
                 {fields.map((field, index) => (
-                    <div key={field.id} className="mb-8 relative p-6 border border-gray-200 rounded-lg">
+                    <div key={field.id} className="mb-8 relative p-6 bg-gray-750 border border-gray-600 rounded-lg">
                         {fields.length > 1 && (
                             <button
                                 type="button"
                                 onClick={() => remove(index)}
-                                className="absolute right-4 top-4 text-red-500 hover:text-red-700"
+                                className="absolute right-4 top-4 text-gray-400 hover:text-red-400 
+                                    transition-colors duration-200"
                             >
-                                Remove
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
                             </button>
                         )}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -649,7 +605,7 @@ export default function ResumeForm() {
                             />
                         </div>
                         <div className="mt-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-300 mb-1">
                                 Highlights/Key Features
                             </label>
                             <Controller
@@ -661,6 +617,12 @@ export default function ResumeForm() {
                                         items={field.value || []}
                                         onChange={(newItems) => field.onChange(newItems)}
                                         placeholder="Add key features or achievements"
+                                        inputClassName="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg
+                                            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 
+                                            transition-all duration-200 text-gray-100 placeholder-gray-400"
+                                        addButtonClassName="mt-2 w-full py-2 border-2 border-dashed border-gray-600 rounded-lg
+                                            text-gray-400 hover:text-gray-200 hover:border-gray-500 hover:bg-gray-700/50
+                                            transition-colors duration-200 flex items-center justify-center"
                                     />
                                 )}
                             />
@@ -767,11 +729,6 @@ export default function ResumeForm() {
         hasContactInfo: true
     };
 
-    // Add this function inside your ResumeForm component
-    const loadSampleData = () => {
-        methods.reset(SAMPLE_DATA);
-    };
-
     // Form Sections Renderer
     const renderCurrentStep = () => {
         switch (currentStep) {
@@ -792,49 +749,170 @@ export default function ResumeForm() {
 
     // Main Render
     return (
-        <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
-            <div className="container mx-auto px-2 sm:px-4 max-w-full">
+        <div className="min-h-screen w-full bg-gray-900 py-2 sm:py-4">
+            <div className="w-full px-2 sm:px-4">
+                {/* Main Layout */}
                 <div className="flex flex-col lg:flex-row gap-4">
-                    {/* Form Section */}
-                    <div className="w-full lg:w-1/2">
-                        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6 gap-4">
-                            <StepIndicator />
-                            <div className="flex gap-2">
-                                <button
-                                    type="button"
-                                    onClick={loadSampleData}
-                                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                                >
-                                    Load Sample
-                                </button>
+                    {/* Form Section - Full width on mobile, half on desktop */}
+                    <div className="w-full lg:w-1/2 lg:h-[90vh] lg:overflow-y-auto">
+                        <form onSubmit={handleSubmit(generateResume)}
+                            className="bg-gray-800 shadow-xl rounded-xl p-4 sm:p-6 border border-gray-700">
+                            {/* Mobile Progress Indicator */}
+                            <div className="lg:hidden mb-4 flex items-center justify-between text-gray-400">
+                                <span>Step {currentStep} of {TOTAL_STEPS}</span>
+                                <span className="text-indigo-400 font-medium">{STEP_TITLES[currentStep - 1]}</span>
                             </div>
-                        </div>
-                        <form
-                            onSubmit={handleSubmit(generateResume)}
-                            className="bg-white shadow-md rounded-lg p-3 sm:p-6"
-                        >
-                            {renderCurrentStep()}
-                            <NavigationButtons />
+
+                            {/* Desktop Step Indicator - Hidden on mobile */}
+                            <div className="hidden w-full justify-center lg:flex">
+                                <StepIndicator />
+                            </div>
+
+                            {/* Form Content */}
+                            <div className="space-y-6">
+                                {renderCurrentStep()}
+                            </div>
+
+                            {/* Navigation Buttons - Optimized for mobile */}
+                            <div className="flex justify-between mt-6 gap-3">
+                                <div className="flex gap-3 w-full">
+                                    {currentStep > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setCurrentStep(currentStep - 1)}
+                                            className="px-4 sm:px-6 py-2.5 text-gray-300 bg-gray-800 rounded-lg 
+                                                hover:bg-gray-700 transition-all duration-200 flex items-center gap-2 
+                                                group flex-1 justify-center sm:flex-none"
+                                        >
+                                            <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform duration-200"
+                                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                            <span className="hidden sm:inline">Back</span>
+                                        </button>
+                                    )}
+                                    {currentStep < TOTAL_STEPS ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => setCurrentStep(currentStep + 1)}
+                                            className="px-4 sm:px-6 py-2.5 bg-indigo-600 text-white rounded-lg 
+                                                hover:bg-indigo-700 transition-all duration-200 flex items-center 
+                                                gap-2 group flex-1 justify-center sm:flex-none"
+                                        >
+                                            <span className="hidden sm:inline">Next</span>
+                                            <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-200"
+                                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    ) : (
+                                        <div className="flex flex-col sm:flex-row w-full gap-3">
+                                            <select
+                                                value={selectedFormat}
+                                                onChange={(e) => setSelectedFormat(e.target.value as FileFormat)}
+                                                className="px-3 py-2.5 bg-gray-800 text-gray-300 rounded-lg border 
+                                                    border-gray-700 focus:ring-2 focus:ring-indigo-500 
+                                                    focus:border-indigo-500 transition-all duration-200"
+                                            >
+                                                <option value="both">PDF & LaTeX</option>
+                                                <option value="pdf">PDF Only</option>
+                                                <option value="latex">LaTeX Only</option>
+                                            </select>
+                                            <button
+                                                type="button"
+                                                onClick={handleSubmit(generateResume)}
+                                                disabled={isGenerating}
+                                                className={`px-4 py-2.5 bg-emerald-600 text-white rounded-lg
+                                                    hover:bg-emerald-700 transition-all duration-200 flex items-center 
+                                                    justify-center gap-2 flex-1 ${isGenerating ? 'opacity-75 cursor-not-allowed' : ''}`}
+                                            >
+                                                {isGenerating ? (
+                                                    <>
+                                                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                                        </svg>
+                                                        <span className="hidden sm:inline">Generating...</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        Generate
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                        </svg>
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </form>
                     </div>
 
-                    {/* PDF Preview Section */}
-                    <div className="w-full lg:w-1/2">
-                        {pdfUrl ? (
-                            <iframe
-                                src={pdfUrl}
-                                className="w-full h-[calc(100vh-32px)]"
-                                title="Resume Preview"
-                            />
-                        ) : (
-                            <div className="w-full h-[calc(100vh-32px)] flex items-center justify-center text-gray-500 border-2 border-dashed rounded-lg">
-                                Click "Compile" to see preview
+                    {/* Preview Section - Floating button on mobile */}
+                    <div className="w-full lg:w-1/2 lg:h-[calc(100vh-2rem)]">
+                        {/* Mobile Preview Toggle Button */}
+                        <div className="fixed bottom-4 right-4 lg:hidden z-50">
+                            <button
+                                onClick={() => setShowPreview(!showPreview)}
+                                className="bg-indigo-600 text-white p-4 rounded-full shadow-lg 
+                                    hover:bg-indigo-700 transition-all duration-200"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Preview Content */}
+                        <div className={`fixed inset-0 z-40 bg-gray-900 lg:relative lg:block transition-all duration-300 ease-in-out overflow-y-auto
+                            ${showPreview ? 'translate-y-0' : 'translate-y-full lg:translate-y-0'}`}>
+                            <div className="h-full lg:h-[85vh] overflow-y-auto">
+                                {/* Mobile Preview Header */}
+                                <div className="lg:hidden flex items-center justify-between p-4 border-b border-gray-700">
+                                    <h2 className="text-lg font-semibold text-gray-100">Preview</h2>
+                                    <button
+                                        onClick={() => setShowPreview(false)}
+                                        className="text-gray-400 hover:text-gray-200"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {/* Preview Content */}
+                                {pdfUrl ? (
+                                    <iframe
+                                        src={pdfUrl}
+                                        className="w-full h-full"
+                                        title="Resume Preview"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center 
+                                        text-gray-400 border-2 border-dashed border-gray-700 bg-gray-800">
+                                        <div className="text-center p-4">
+                                            <svg className="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            <p className="text-lg">Generate your resume to see preview</p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        )}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     );
-}
+});
+
+export default ResumeForm;
 

@@ -18,6 +18,9 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
 }
 
 @keyframes slideIn {
@@ -110,4 +113,121 @@ html {
 .animate-gradient {
   background-size: 200% 200%;
   animation: gradient 15s ease infinite;
+}
+
+/* Template page specific styles */
+.template-page {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.template-page-content {
+  height: calc(100vh - 64px); /* 64px is the height of the navbar */
+}
+
+@layer utilities {
+    /* Enable smooth scrolling on iOS */
+    .scroll-smooth {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Add mobile-specific styles */
+@media (max-width: 1024px) {
+    .form-section-content {
+        overflow-y: visible;
+    }
+}
+
+/* Update mobile-specific styles */
+@media (max-width: 1024px) {
+  /* Remove fixed height constraints */
+  .template-page,
+  .template-page-content {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  /* Enable scrolling for form sections */
+  .form-section-content {
+    overflow-y: visible;
+    height: auto;
+  }
+
+  /* Adjust preview overlay */
+  .preview-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Add smooth scrolling support */
+@layer utilities {
+  .scroll-smooth {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
+
+/* Add progress animation */
+@keyframes progress {
+    0% { width: 0; }
+    100% { width: 100%; }
+}
+
+.animate-progress {
+    animation: progress 1s ease-in-out;
+}
+
+/* Add hover effect for step indicators */
+.step-indicator:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease-in-out;
+}
+
+/* Add pulse animation for active step */
+@keyframes pulse-ring {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0;
+    }
+}
+
+.pulse-ring {
+    position: relative;
+}
+
+.pulse-ring::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: -8px;
+    right: -8px;
+    bottom: -8px;
+    border-radius: 50%;
+    background: rgba(99, 102, 241, 0.3);
+    animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+}
+
+@keyframes bounce-x {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(25%);
+    }
+}
+
+.animate-bounce-x {
+    animation: bounce-x 1s infinite;
 }
