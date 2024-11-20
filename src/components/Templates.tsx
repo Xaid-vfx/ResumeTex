@@ -9,6 +9,7 @@ interface Template {
     id: string;
     name: string;
     description: string;
+    url: string;
     isComingSoon?: boolean;
 }
 
@@ -16,13 +17,15 @@ const templates: Template[] = [
     {
         id: 'jake',
         name: "Jake's Resume",
-        description: 'A clean and professional resume template with sections for education, experience, projects, and skills.'
+        description: 'A clean and professional resume template with sections for education, experience, projects, and skills.',
+        url: '/templates/jake'
     },
     {
         id: 'deedy',
         name: "Deedy CV (Coming Soon)",
         description: 'A two-column academic CV template perfect for researchers and graduate students.',
-        isComingSoon: true
+        isComingSoon: true,
+        url: '/templates/deedy'
     }
 ];
 

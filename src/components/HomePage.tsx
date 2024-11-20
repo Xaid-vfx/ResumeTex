@@ -166,7 +166,8 @@ export default function HomePage() {
                                 description: "Clean and professional design suitable for all industries",
                                 gradient: "from-blue-500 to-cyan-500",
                                 isActive: true,
-                                delay: 0
+                                delay: 0,
+                                url: '/jake'
                             },
                             {
                                 name: "Deedy CV",
@@ -174,7 +175,8 @@ export default function HomePage() {
                                 description: "Modern two-column layout perfect for tech professionals",
                                 gradient: "from-purple-500 to-pink-500",
                                 isActive: false,
-                                delay: 0.1
+                                delay: 0.1,
+                                url: '/deedy'
                             }
                         ].map((template, index) => (
                             <motion.div
@@ -215,7 +217,7 @@ export default function HomePage() {
                                         <p className="text-gray-300 mb-4">{template.description}</p>
                                         {template.isActive ? (
                                             <button
-                                                onClick={() => router.push(`/templates/${template.name.toLowerCase()}`)}
+                                                onClick={() => router.push(`/templates/${template.url.toLowerCase()}`)}
                                                 className={`px-4 py-2 rounded-lg bg-gradient-to-r ${template.gradient} 
                                                     opacity-0 group-hover:opacity-100 transition-opacity duration-300
                                                     font-medium flex items-center gap-2`}
