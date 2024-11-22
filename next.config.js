@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    output: 'standalone',
     webpack: (config) => {
         config.resolve = {
             ...config.resolve,
@@ -26,7 +27,8 @@ const nextConfig = {
         ignoreDuringBuilds: true,
     },
     images: {
-        unoptimized: true
+        unoptimized: true,
+        domains: ['*']
     }
 }
 
