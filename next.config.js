@@ -1,7 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    distDir: 'build',
-    output: 'export',
     webpack: (config) => {
         config.resolve = {
             ...config.resolve,
