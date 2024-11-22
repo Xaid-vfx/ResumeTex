@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import ResumeForm from '@/components/ResumeForm';
-import DeedyResumeForm from '@/components/DeedyResumeForm';
+import ResumeForm from '../components/ResumeForm';
+import DeedyResumeForm from '../components/DeedyResumeForm';
 
 export default function TemplateEditor({ templateId }: { templateId: string }) {
     const router = useRouter();

@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, memo, useCallback, useEffect, forwardRef } from 'react';
-import type { ResumeData } from '@/types/resume';
+import type { ResumeData } from '../types/resume';
 import { useForm, useFieldArray, Controller, Control } from 'react-hook-form';
 import DynamicList from './DynamicList';
 

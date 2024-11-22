@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { resumeTemplate } from '@/templates/resumeTemplate';
+import { resumeTemplate } from '../../../templates/resumeTemplate';
 import Mustache from 'mustache';
-import type { ResumeData } from '@/types/resume';
+import type { ResumeData } from '../../../types/resume';
 
 export async function POST(request: Request) {
     try {
