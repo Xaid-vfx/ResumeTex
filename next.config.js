@@ -19,12 +19,7 @@ const nextConfig = {
     experimental: {
         serverActions: {
             allowedOrigins: ["*"]
-        },
-        tracingIgnores: [
-            '**/node_modules/**',
-            '**/.next/**',
-            '**/.git/**'
-        ]
+        }
     },
     typescript: {
         ignoreBuildErrors: true,
