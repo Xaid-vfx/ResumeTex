@@ -5,8 +5,8 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { v4 as uuidv4 } from 'uuid';
 import Mustache from 'mustache';
-import deedyTemplate from '../../../templates/deedyTemplate';
-import type { DeedyResumeData } from '../../../types/deedyResume';
+import deedyTemplate from '@/templates/deedyTemplate';
+import type { DeedyResumeData } from '@/types/deedyResume';
 
 const execAsync = promisify(exec);
 const TEMP_DIR = path.join(process.cwd(), 'tmp');
