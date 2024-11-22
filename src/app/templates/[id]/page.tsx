@@ -1,11 +1,11 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import ResumeForm from '@/components/ResumeForm';
-import DeedyResumeForm from '@/components/DeedyResumeForm';
+import ResumeForm from '../../../components/ResumeForm';
+import DeedyResumeForm from '../../../components/DeedyResumeForm';
 import Link from 'next/link';
 import { useState, useRef } from 'react';
-import type { ResumeData } from '@/types/resume';
+import type { ResumeData } from '../../../types/resume';
 import { Metadata } from 'next';
 
 // Move SAMPLE_DATA here
