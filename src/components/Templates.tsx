@@ -2,8 +2,8 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import jakePreview from '../assets/images/jakesresumeimage.jpeg';
-import deedyPreview from '../assets/images/DeedyPreview.jpeg';
+import jakePreview from '/images/jakesresumeimage.jpeg';
+import deedyPreview from '/images/DeedyPreview.jpeg';
 
 interface Template {
     id: string;
