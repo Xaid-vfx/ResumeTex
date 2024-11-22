@@ -1,6 +1,7 @@
 {
   "version": 2,
   "buildCommand": "next build",
+  "outputDirectory": "build",
   "installCommand": "npm install",
   "framework": "nextjs",
   "builds": [
