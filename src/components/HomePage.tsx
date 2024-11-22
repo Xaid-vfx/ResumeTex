@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { FiArrowRight } from 'react-icons/fi';
 import Image from 'next/image';
-import jakePreview from '/images/jakesresumeimage.jpeg';
-import deedyPreview from '/images/DeedyPreview.jpeg';
+import jakePreview from '../../public/images/jakesresumeimage.jpeg';
+import deedyPreview from '../../public/images/DeedyPreview.jpeg';
 
 export default function HomePage() {
     const router = useRouter();
