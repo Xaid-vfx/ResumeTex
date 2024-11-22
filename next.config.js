@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    distDir: '.next',
+    poweredByHeader: false,
     webpack: (config) => {
         config.resolve = {
             ...config.resolve,
@@ -18,6 +20,11 @@ const nextConfig = {
         serverActions: {
             allowedOrigins: ["*"]
         },
+        tracingIgnores: [
+            '**/node_modules/**',
+            '**/.next/**',
+            '**/.git/**'
+        ]
     },
     typescript: {
         ignoreBuildErrors: true,
@@ -26,8 +33,7 @@ const nextConfig = {
         ignoreDuringBuilds: true,
     },
     images: {
-        unoptimized: true,
-        domains: ['*']
+        unoptimized: true
     }
 }
 
