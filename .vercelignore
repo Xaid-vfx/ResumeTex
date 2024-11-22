@@ -1,4 +1,7 @@
-Dockerfile
-docker-compose.yml
-tsconfig.backend.json
-src/app/api/generate-pdf/server.ts
+.git
+.env
+.env.*
+node_modules
+README.md
+.gitignore
+.next
