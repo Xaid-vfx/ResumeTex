@@ -1,9 +1,12 @@
 {
   "version": 2,
+  "buildCommand": "next build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
   "builds": [
     {
-      "src": "Dockerfile",
-      "use": "@vercel/docker"
+      "src": "next.config.ts",
+      "use": "@vercel/next"
     }
   ],
   "routes": [
