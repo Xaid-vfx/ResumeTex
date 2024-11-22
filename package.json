@@ -9,7 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
     "@types/mustache": "^4.2.5",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
     "framer-motion": "^11.11.17",
     "mustache": "^4.2.0",
     "next": "15.0.3",

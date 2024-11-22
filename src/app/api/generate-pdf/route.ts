@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { resumeTemplate } from '@/templates/resumeTemplate';
+import { resumeTemplate } from '../../../templates/resumeTemplate';
 import Mustache from 'mustache';
 import type { ResumeData } from '@/types/resume';
 import { exec } from 'child_process';
-import { writeFile, mkdir, readFile, unlink, readdir, rmdir } from 'fs/promises';
+import { writeFile, mkdir, readFile, unlink, readdir, rmdir, stat } from 'fs/promises';
 import { join } from 'path';
 import { promisify } from 'util';
 import { v4 as uuidv4 } from 'uuid';
@@ -39,6 +39,10 @@ async function cleanupTempFiles(dir: string) {
 }
 
 export async function POST(request: Request) {
+    return generatePDF(request);
+}
+
+export async function generatePDF(request: Request) {
     const jobId = uuidv4();
     const jobDir = join(TEMP_DIR, jobId);
 
