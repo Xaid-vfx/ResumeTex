@@ -28,7 +28,7 @@ const ResumeForm = forwardRef((props: ResumeFormProps, ref) => {
             personalInfo: {
                 name: '', phone: '', email: '', linkedinUrl: '', githubUrl: '',
             },
-            education: [{ school: '', location: '', degree: '', date: '' }],
+            education: [{ school: '', location: '', degree: '', date: '', cgpa: '' }],
             experience: [{ title: '', date: '', company: '', location: '', highlights: [] }],
             projects: [{ name: '', technologies: '', date: '', highlights: [] }],
             technicalSkills: {
@@ -457,6 +457,12 @@ const ResumeForm = forwardRef((props: ResumeFormProps, ref) => {
                                 name={`education.${index}.date`}
                                 placeholder="May 2020 - Present"
                             />
+                            <FormInput
+                                label="CGPA"
+                                control={control}
+                                name={`education.${index}.cgpa`}
+                                placeholder="3.8/4.0"
+                            />
                         </div>
                     </div>
                 ))}
@@ -465,7 +471,8 @@ const ResumeForm = forwardRef((props: ResumeFormProps, ref) => {
                         school: '',
                         location: '',
                         degree: '',
-                        date: ''
+                        date: '',
+                        cgpa: ''
                     })}
                     text="Add Education"
                 />
@@ -532,12 +539,18 @@ const ResumeForm = forwardRef((props: ResumeFormProps, ref) => {
                             <Controller
                                 name={`experience.${index}.highlights`}
                                 control={control}
-                                defaultValue={[]}
                                 render={({ field }) => (
                                     <DynamicList
                                         items={field.value || []}
                                         onChange={(newItems) => field.onChange(newItems)}
-                                        placeholder="Add key achievements or responsibilities"
+                                        placeholder="Add key features or achievements"
+                                        inputClassName="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg
+                                            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 
+                                            transition-all duration-200 text-gray-100 placeholder-gray-400"
+                                        addButtonClassName="mt-2 w-full py-2 border-2 border-dashed border-gray-600 rounded-lg
+                                            hover:border-gray-500 focus:border-indigo-500 transition-all duration-200
+                                            text-gray-400 hover:text-gray-300 focus:text-indigo-500
+                                            flex items-center justify-center gap-2"
                                     />
                                 )}
                             />
@@ -622,7 +635,7 @@ const ResumeForm = forwardRef((props: ResumeFormProps, ref) => {
                                             transition-all duration-200 text-gray-100 placeholder-gray-400"
                                         addButtonClassName="mt-2 w-full py-2 border-2 border-dashed border-gray-600 rounded-lg
                                             text-gray-400 hover:text-gray-200 hover:border-gray-500 hover:bg-gray-700/50
-                                            transition-colors duration-200 flex items-center justify-center"
+                                            transition-colors duration-200 flex items-center justify-center gap-2"
                                     />
                                 )}
                             />

@@ -3,7 +3,7 @@ import { resumeTemplate } from '@/templates/resumeTemplate';
 import Mustache from 'mustache';
 import type { ResumeData } from '@/types/resume';
 import { exec } from 'child_process';
-import { writeFile, mkdir, readFile, unlink, readdir, rmdir } from 'fs/promises';
+import { writeFile, mkdir, readFile, unlink, readdir, rmdir, stat } from 'fs/promises';
 import { join } from 'path';
 import { promisify } from 'util';
 import { v4 as uuidv4 } from 'uuid';
@@ -63,10 +63,10 @@ export async function POST(request: Request) {
                 resumeData.personalInfo?.linkedinUrl),
 
             education: (resumeData.education || []).filter(edu =>
-                edu.school || edu.location || edu.degree || edu.date
+                edu.school || edu.location || edu.degree || edu.date || edu.cgpa
             ),
             hasEducation: (resumeData.education || []).some(edu =>
-                edu.school || edu.location || edu.degree || edu.date
+                edu.school || edu.location || edu.degree || edu.date || edu.cgpa
             ),
 
             experience: (resumeData.experience || []).filter(exp => {

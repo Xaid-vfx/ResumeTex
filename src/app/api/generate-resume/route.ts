@@ -19,7 +19,7 @@ export async function POST(request: Request) {
 
         // Filter out empty entries from arrays
         const filteredEducation = resumeData.education?.filter(edu =>
-            edu.school || edu.location || edu.degree || edu.date
+            edu.school || edu.location || edu.degree || edu.date || edu.cgpa
         ) || [];
 
         const filteredExperience = resumeData.experience?.filter(exp => {

@@ -13,6 +13,7 @@ export interface Education {
     location: string;
     degree: string;
     date: string;
+    cgpa?: string;
 }
 
 export interface Experience {

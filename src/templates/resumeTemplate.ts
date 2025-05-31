@@ -81,6 +81,15 @@ export const resumeTemplate = `
 \\newcommand{\\resumeItemListStart}{\\begin{itemize}}
 \\newcommand{\\resumeItemListEnd}{\\end{itemize}\\vspace{-5pt}}
 
+\\newcommand{\\resumeSubheadingWithCGPA}[5]{
+  \\vspace{-2pt}\\item
+    \\begin{tabular*}{0.97\\textwidth}[t]{l@{\\extracolsep{\\fill}}r}
+      \\textbf{#1} & #2 \\\\
+      \\textit{\\small#3} & \\textit{\\small #4} \\\\
+      \\footnotesize{#5} & \\\\
+    \\end{tabular*}\\vspace{-7pt}
+}
+
 %-------------------------------------------
 %%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -103,9 +112,17 @@ export const resumeTemplate = `
 \\section{Education}
 \\resumeSubHeadingListStart
 {{#education}}
+{{#cgpa}}
+\\resumeSubheadingWithCGPA
+{ {{{school}}} }{ {{{date}}} }
+{ {{{degree}}} }{ {{{location}}} }
+{ CGPA: {{{cgpa}}} }
+{{/cgpa}}
+{{^cgpa}}
 \\resumeSubheading
 { {{{school}}} }{ {{{date}}} }
 { {{{degree}}} }{ {{{location}}} }
+{{/cgpa}}
 {{/education}}
 \\resumeSubHeadingListEnd
 {{/hasEducation}}

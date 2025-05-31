@@ -25,32 +25,68 @@ const SAMPLE_DATA: ResumeData = {
         degree: 'Bachelor of Science in Computer Science',
         date: '2018 - 2022'
     }],
-    experience: [{
-        title: 'Software Engineer',
-        company: 'Tech Solutions Inc.',
-        location: 'San Francisco, CA',
-        date: '2022 - Present',
-        highlights: [
-            'Developed full-stack web applications using React and Node.js, serving 100k+ users',
-            'Optimized database queries resulting in 40\\% reduction in response time',
-            'Led migration from monolithic to microservices architecture'
-        ]
-    }],
-    projects: [{
-        name: 'E-commerce Platform',
-        technologies: 'React, Node.js, MongoDB',
-        date: '2023',
-        highlights: [
-            'Built a scalable marketplace platform handling 10k+ daily transactions',
-            'Implemented secure payment gateway integration with Stripe',
-            'Designed responsive UI components using Material-UI'
-        ]
-    }],
+    experience: [
+        {
+            title: 'Senior Software Engineer',
+            company: 'Tech Solutions Inc.',
+            location: 'San Francisco, CA',
+            date: '2022 - Present',
+            highlights: [
+                'Led development of microservices architecture serving 1M+ daily users',
+                'Reduced API response time by 60\\% through query optimization',
+                'Mentored team of 5 junior developers in best practices and architecture'
+            ]
+        },
+        {
+            title: 'Software Developer',
+            company: 'Data Systems Corp',
+            location: 'Boston, MA',
+            date: '2020 - 2022',
+            highlights: [
+                'Developed full-stack applications using React and Node.js',
+                'Implemented CI/CD pipeline reducing deployment time by 40\\%',
+                'Created automated testing suite with 90\\% code coverage'
+            ]
+        },
+        {
+            title: 'Junior Developer',
+            company: 'StartUp Innovation',
+            location: 'Austin, TX',
+            date: '2019 - 2020',
+            highlights: [
+                'Built responsive web applications using modern JavaScript frameworks',
+                'Integrated third-party APIs and payment gateways',
+                'Participated in agile development cycles and daily standups'
+            ]
+        }
+    ],
+    projects: [
+        {
+            name: 'E-commerce Platform',
+            technologies: 'React, Node.js, MongoDB, AWS',
+            date: '2023',
+            highlights: [
+                'Built scalable marketplace platform handling 10k+ daily transactions',
+                'Implemented secure payment gateway with Stripe',
+                'Designed responsive UI components using Material-UI'
+            ]
+        },
+        {
+            name: 'AI Content Generator',
+            technologies: 'Python, TensorFlow, Flask, Docker',
+            date: '2022',
+            highlights: [
+                'Developed ML model for automated content generation',
+                'Created RESTful API serving 100k+ requests daily',
+                'Containerized application for easy deployment and scaling'
+            ]
+        }
+    ],
     technicalSkills: {
-        languages: 'Java, Python, JavaScript, TypeScript',
-        frameworks: 'Spring Boot, Django, React, Node.js',
-        developerTools: 'Git, Docker, Jenkins, AWS',
-        libraries: 'Redux, Material-UI, NumPy, Pandas'
+        languages: 'Java, Python, JavaScript, TypeScript, SQL',
+        frameworks: 'Spring Boot, Django, React, Node.js, Express',
+        developerTools: 'Git, Docker, Jenkins, AWS, Kubernetes',
+        libraries: 'Redux, Material-UI, NumPy, Pandas, TensorFlow'
     },
     hasEducation: true,
     hasExperience: true,

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import DynamicList from './DynamicList';
 
+type LinkPlatform = 'facebook' | 'github' | 'linkedin' | 'youtube' | 'twitter' | 'quora';
+
 interface DeedyResumeData {
     personalInfo: {
         firstName: string;
@@ -24,12 +26,7 @@ interface DeedyResumeData {
         honors?: string[];
     }>;
     links: {
-        facebook?: string;
-        github?: string;
-        linkedin?: string;
-        youtube?: string;
-        twitter?: string;
-        quora?: string;
+        [K in LinkPlatform]?: string;
     };
     coursework: {
         graduate: string[];
@@ -333,13 +330,13 @@ export default function DeedyResumeForm() {
             title: "Links",
             content: (
                 <div className="space-y-4">
-                    {Object.keys(watch("links")).map((platform) => (
+                    {(Object.keys(watch("links")) as LinkPlatform[]).map((platform) => (
                         <div key={platform}>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
                                 {platform}
                             </label>
                             <input
-                                {...register(`links.${platform}`)}
+                                {...register(`links.${platform}` as const)}
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             />
                         </div>

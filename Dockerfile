@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs \
-    && npm install -g npm@latest
+    && npm install -g npm@10.2.4
 
 # Install all necessary TeX Live packages
 RUN apt-get install -y \
@@ -27,7 +27,7 @@ WORKDIR /app
 
 # Copy package files and config files first
 COPY package*.json ./
-COPY next.config.ts ./
+COPY next.config.js ./
 
 # First, install React with specific version
 RUN npm install react@18.2.0 react-dom@18.2.0 --legacy-peer-deps

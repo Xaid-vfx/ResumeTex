@@ -2,11 +2,19 @@ import React, { useState } from 'react';
 
 interface DynamicListProps {
     items: string[];
-    onChange: (items: string[]) => void;
+    onChange: (newItems: string[]) => void;
     placeholder?: string;
+    inputClassName?: string;
+    addButtonClassName?: string;
 }
 
-const DynamicList: React.FC<DynamicListProps> = ({ items, onChange, placeholder }) => {
+const DynamicList: React.FC<DynamicListProps> = ({
+    items,
+    onChange,
+    placeholder = "Add item",
+    inputClassName = "",
+    addButtonClassName = ""
+}) => {
     const [newItem, setNewItem] = useState('');
 
     const addItem = () => {
@@ -29,12 +37,12 @@ const DynamicList: React.FC<DynamicListProps> = ({ items, onChange, placeholder 
                     onChange={(e) => setNewItem(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addItem()}
                     placeholder={placeholder}
-                    className="flex-1 p-2 border text-black rounded"
+                    className={`flex-1 p-2 border text-black rounded ${inputClassName}`}
                 />
                 <button
                     type="button"
                     onClick={addItem}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 ${addButtonClassName}`}
                 >
                     Add
                 </button>
