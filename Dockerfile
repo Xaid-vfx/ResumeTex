@@ -49,9 +49,13 @@ RUN npm run build
 # Create temp directory for LaTeX files with proper permissions
 RUN mkdir -p /tmp/latex-temp && chmod 777 /tmp/latex-temp
 
-# Expose the port (Railway uses PORT environment variable)
-ENV PORT=3000
-EXPOSE 3000
+# Fly.io uses PORT environment variable internally
+ENV PORT=8080
+EXPOSE 8080
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:${PORT}/ || exit 1
 
 # Start the application
 CMD ["npm", "start"] 
